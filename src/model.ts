@@ -1,6 +1,6 @@
 /** BASEco grout model. Field gallons use the mass balance rounded to 2 decimals (35.79), then the ±10% range. Bag purchasing divides that project total by the unrounded yield so 50 piles is 176.155 bags, not 3.52 × 50. */
 
-export const APP_VERSION = '1.2'
+export const APP_VERSION = '1.3'
 export const FOOTER = `v${APP_VERSION} — developed by ED`
 export const APP_DOCUMENT_TITLE = `MicroPile Hub – Grout Consumption Calculator ${APP_VERSION}`
 export const SPEC_DENSITY_LB_PER_GAL = 15
@@ -103,7 +103,6 @@ export interface OkResult {
   densityOutOfSpec: boolean
   scenarios: DensityScenario[]
   geometry: Geometry
-  equation: string
 }
 
 export interface ErrResult {
@@ -269,9 +268,6 @@ export function compute(input: Inputs): Result {
     outOfSpec: density < SPEC_DENSITY_LB_PER_GAL,
     active: Math.abs(density - input.densityLbPerGal) < 1e-9,
   }))
-  const batchesLabel = formatFlex(input.batchesPerPile, 2)
-  const equation = `${batchesLabel} x ${formatNumber(batchGal, 2)} gal - ${formatFlex(input.tankResidualGal, 2)} gal residual = ${formatNumber(standard, 2)} gal`
-
   return {
     ok: true,
     inputs: input,
@@ -295,6 +291,5 @@ export function compute(input: Inputs): Result {
     densityOutOfSpec: input.densityLbPerGal < SPEC_DENSITY_LB_PER_GAL,
     scenarios,
     geometry: geometryOf(input),
-    equation,
   }
 }

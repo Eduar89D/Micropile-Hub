@@ -51,7 +51,7 @@ export default defineConfig({
       workbox: {
         navigateFallback: 'index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
-        cacheId: 'micropile-hub-v12',
+        cacheId: 'micropile-hub-v13',
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,

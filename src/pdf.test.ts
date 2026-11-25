@@ -19,7 +19,7 @@ describe('pdf', () => {
           { label: 'Inner', value: '0.746 gal' },
           { label: 'Total', value: '5.284 gal' },
         ],
-        note: 'Geometry is theoretical and is not included in the purchase.',
+        note: '',
       },
       { compress: false },
     )
@@ -29,7 +29,7 @@ describe('pdf', () => {
     expect(raw).toContain('35.79 gal')
     expect(raw).toContain('BASEco')
     expect(raw).toContain('developed by ED')
-    expect(raw).toContain('v1.2')
+    expect(raw).toContain('v1.3')
   })
 
   it('prints the comparison columns', () => {

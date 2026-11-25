@@ -37,7 +37,6 @@ describe('default batch', () => {
     expect(result.batchGal).toBe(50.79)
     expect(result.inputs.batchesPerPile).toBe(1)
     expect(result.perPile.standard).toBe(35.79)
-    expect(result.equation).toBe('1 x 50.79 gal - 15 gal residual = 35.79 gal')
     expect(result.totalFt).toBe(900)
   })
 
@@ -170,7 +169,7 @@ describe('geometry', () => {
 
 describe('footer', () => {
   it('uses the required credit line', () => {
-    expect(FOOTER).toBe('v1.2 — developed by ED')
+    expect(FOOTER).toBe('v1.3 — developed by ED')
   })
 })
 

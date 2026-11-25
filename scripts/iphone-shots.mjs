@@ -29,8 +29,6 @@ const must = [
   'INFERRED',
   '35.79',
   '900 ft',
-  '50.79',
-  '761.9',
   '32.2',
   '35.8',
   '39.4',
@@ -40,15 +38,12 @@ const must = [
   '763',
   'Purchase reserve – simple ground',
   'Pallets (35 bags/pallet)',
-  '10.158',
-  '3.52',
   'OUT OF SPEC',
   'Coming soon',
-  'v1.2 — developed by ED',
+  'v1.3 — developed by ED',
   '4.538',
   '0.746',
   '5.284',
-  '4.53',
 ]
 for (const snippet of must) {
   if (!text.includes(snippet)) throw new Error(`Missing on page: ${snippet}`)

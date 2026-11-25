@@ -6,7 +6,6 @@ import {
   defaults,
   formatFlex,
   formatNumber,
-  formatSigned,
   type Inputs,
   type OkResult,
   type Result,
@@ -90,8 +89,6 @@ function shell(): string {
           <p><span class="badge" id="inferred-badge">INFERRED</span></p>
           <h2>Field consumption</h2>
           <p class="hero-num"><span id="inferred-value">—</span> <span class="unit">gal / pile</span></p>
-          <p class="equation" id="field-equation"></p>
-          <p class="note">Mass balance minus what stays in the tank. This is not a hole-volume estimate.</p>
           <p class="banner banner-warn" id="spec-banner" hidden></p>
           <p class="banner banner-error" id="error-banner" hidden></p>
         </section>
@@ -107,16 +104,14 @@ function shell(): string {
             ${numField('batches-per-pile', 'Batches per pile', '0.1', '0')}
             ${numField('residual', 'Tank residual (gal)', '0.1', '0')}
           </div>
-          <p class="statline" id="batch-stats"></p>
         </section>
 
         <section class="card" id="range">
-          <h2>Planning range, ±10%</h2>
-          <h3>Per pile (1 decimal)</h3>
+          <h2>Planning range</h2>
+          <h3>Per pile</h3>
           <div class="trio" id="pile-range"></div>
           <h3 id="project-range-label">Project</h3>
           <div class="trio" id="project-range"></div>
-          <p class="note">Low and high are the 2-decimal field figure times 0.90 and 1.10. The purchase reserve does not change these gallons.</p>
         </section>
 
         <section class="card" id="purchase">
@@ -131,12 +126,12 @@ function shell(): string {
           <label class="field reserve-field" for="water-per-bag">Water to buy (gal per bag)
             <input id="water-per-bag" type="number" inputmode="decimal" min="0" step="0.1" />
           </label>
-          <p class="note">3% is the reserve for simple, standard ground. Medium and hard ground will get their own factors in a future version. The reserve changes bags, pallets, and water to buy only. It does not change the low, standard, or high gallons.</p>
+          <p class="note">For simple, standard ground. Medium and hard ground factors are coming later.</p>
         </section>
 
         <section class="card" id="scenarios">
           <h2>Density scenarios</h2>
-          <p class="note">Same batch, batches per pile, and residual. Any density under 15 lb/gal is out of spec.</p>
+          <p class="note">Under 15 lb/gal is out of spec.</p>
           <table>
             <thead>
               <tr><th>Density</th><th>Gal / pile</th><th>Status</th></tr>
@@ -146,15 +141,13 @@ function shell(): string {
         </section>
 
         <section class="card" id="geometry">
-          <h2>Theoretical geometry</h2>
-          <p class="note">Separate from field consumption. Not added to the gallons or the purchase.</p>
+          <h2>Geometry</h2>
           <p class="statline" id="geom-spec"></p>
           <div class="geom-figures">
             <article><span>Annular grout</span><strong id="geom-annular">—</strong></article>
             <article><span>Inner grout</span><strong id="geom-inner">—</strong></article>
             <article><span>Total theoretical</span><strong id="geom-total">—</strong></article>
           </div>
-          <p class="note" id="geom-note"></p>
           <p class="banner banner-warn" id="geom-warn" hidden></p>
           <details>
             <summary>Edit drill bit, bar, and couplers</summary>
@@ -182,26 +175,8 @@ function shell(): string {
             <li>High water table</li>
             <li>Loose fill</li>
           </ul>
-          <button type="button" class="btn" id="special-open" disabled>Not available in 1.2</button>
+          <button type="button" class="btn" id="special-open" disabled>Not available in 1.3</button>
         </section>
-
-        <details class="card formulas" id="formulas">
-          <summary>Formulas and assumptions</summary>
-          <ul>
-            <li>Cement mass = bags × pounds per bag. Default 5 × 94 = 470 lb.</li>
-            <li>Water mass = gallons × 8.34 lb/gal. Default 35 × 8.34 = 291.9 lb.</li>
-            <li>Batch mass = 761.9 lb. Batch volume = mass ÷ density. At 15 lb/gal that is 50.793… gal, shown as 50.79.</li>
-            <li>Field gallons per pile = batches × batch volume − tank residual, then rounded to 2 decimals (35.79). Labeled INFERRED.</li>
-            <li>Low / high = that 2-decimal figure × 0.90 / × 1.10. Per pile is shown to 1 decimal (32.2 / 35.8 / 39.4). Project gallons multiply by the pile count and are shown to 1 decimal.</li>
-            <li>Displayed yield = 50.79 ÷ 5 = 10.158 gal/bag. Purchasing uses the unrounded yield (batch volume ÷ bags) so the project total is not shorted by rounding.</li>
-            <li>Project bags = ceil(standard gallons ÷ yield) on the project total. 50 piles is 176.155 bags, which rounds up to 177. 3.52 × 50 = 176 would be one bag short.</li>
-            <li>Bags to buy = ceil(exact bags × (1 + reserve)). The default reserve is 3% for simple, standard ground. Water to buy = bags to buy × 7 gal. Pallets to buy = ceil(bags to buy ÷ 35), and 35 bags per pallet can be edited. Reserve never changes low, standard, or high gallons.</li>
-            <li>Density scenarios are 16, 15, and 14 lb/gal. Under 15 lb/gal is OUT OF SPEC.</li>
-            <li>Geometry uses a 2.5 in bit, a 40 mm OD / 20 mm ID bar, and 3 bars of 9 ft 10 in (29.5 ft). A US gallon is 231 in³ and 25.4 mm is 1 in. Two couplers are counted as hardware and are not given a volume.</li>
-            <li>Special conditions (fractured rock, voids, high water, loose fill, medium and hard ground) stay out of the 1.2 math. Their factors are coming later.</li>
-          </ul>
-          <p id="formula-now"></p>
-        </details>
 
         <section class="card" id="projects">
           <h2>Saved on this phone</h2>
@@ -319,10 +294,7 @@ function paint(result: Result): void {
     error.textContent = result.error
     spec.hidden = true
     text('inferred-value', '—')
-    text('field-equation', '')
     text('total-ft', '')
-    text('batch-stats', '')
-    text('formula-now', '')
     byId('pile-range').replaceChildren()
     byId('project-range').replaceChildren()
     byId('purchase-rows').replaceChildren()
@@ -330,18 +302,12 @@ function paint(result: Result): void {
     text('geom-annular', '—')
     text('geom-inner', '—')
     text('geom-total', '—')
-    text('geom-note', '')
     text('live', result.error)
     return
   }
   error.hidden = true
   text('total-ft', `${formatFlex(result.inputs.pileCount)} piles · ${formatFlex(result.totalFt)} ft`)
-  text(
-    'batch-stats',
-    `Cement ${formatFlex(result.cementLb, 1)} lb + water ${formatFlex(result.waterLb, 1)} lb = ${formatFlex(result.totalLb, 1)} lb. Batch volume ${formatNumber(result.batchGal, 2)} gal.`,
-  )
   text('inferred-value', formatNumber(result.perPile.standard, 2))
-  text('field-equation', result.equation)
   spec.hidden = !result.densityOutOfSpec
   spec.textContent = result.densityOutOfSpec
     ? `OUT OF SPEC — ${formatFlex(result.inputs.densityLbPerGal, 2)} lb/gal is below 15.`
@@ -355,10 +321,6 @@ function paint(result: Result): void {
   fillPurchase(result)
   fillScenarios(result)
   fillGeometry(result)
-  text(
-    'formula-now',
-    `With the numbers on screen: ${result.equation}. Exact bags ${formatNumber(result.bagsExact, 3)}. Project bags ${formatNumber(result.bagsCeil, 0)}. Bags to buy ${formatNumber(result.bagsToBuy, 0)}. Water ${formatFlex(result.waterToBuyGal)} gal.`,
-  )
   text('live', `${formatNumber(result.perPile.standard, 2)} gallons per pile, inferred.`)
   const save = byId<HTMLButtonElement>('save')
   save.textContent = activeId ? 'Update project' : 'Save project'
@@ -388,9 +350,6 @@ function fillPurchase(result: OkResult): void {
   const host = byId('purchase-rows')
   host.replaceChildren()
   const rows: Array<[string, string]> = [
-    ['Yield', `${formatNumber(result.yieldDisplay, 3)} gal/bag`],
-    ['Bags per pile', formatNumber(result.bagsPerPile, 2)],
-    ['Exact bags', formatNumber(result.bagsExact, 3)],
     ['Project bags', formatNumber(result.bagsCeil, 0)],
     ['Purchase reserve – simple ground', `${formatFlex(result.inputs.reservePercent)}%`],
     ['Bags to buy', formatNumber(result.bagsToBuy, 0)],
@@ -425,18 +384,13 @@ function fillScenarios(result: OkResult): void {
 
 function fillGeometry(result: OkResult): void {
   const { geometry, inputs: current } = result
-  const length = formatFlex(geometry.lengthFt, 2)
   text(
     'geom-spec',
-    `${formatFlex(current.drillBitIn, 2)} in bit · OD ${formatFlex(current.barOdMm, 1)} mm · ID ${formatFlex(current.barIdMm, 1)} mm · ${formatFlex(current.barCount)} × ${formatFlex(current.barFeet)} ft ${formatFlex(current.barInches)} in = ${length} ft · ${formatFlex(current.couplerCount)} couplers`,
+    `${formatFlex(current.drillBitIn, 2)} in bit · OD ${formatFlex(current.barOdMm, 1)} mm · ID ${formatFlex(current.barIdMm, 1)} mm · ${formatFlex(current.barCount)} bars · ${formatFlex(current.couplerCount)} couplers`,
   )
   text('geom-annular', `${formatNumber(geometry.annularGal, 3)} gal`)
   text('geom-inner', `${formatNumber(geometry.innerGal, 3)} gal`)
   text('geom-total', `${formatNumber(geometry.totalGal, 3)} gal`)
-  text(
-    'geom-note',
-    `Reference sheet ${formatNumber(geometry.reference.annular, 2)} / ${formatNumber(geometry.reference.inner, 2)} / ${formatNumber(geometry.reference.total, 2)} gal. This geometry differs by ${formatSigned(geometry.delta.annular, 3)} / ${formatSigned(geometry.delta.inner, 3)} / ${formatSigned(geometry.delta.total, 3)} gal (π, 231 in³ per gallon, 25.4 mm per inch). Couplers are counted only.`,
-  )
   const warn = byId('geom-warn')
   if (current.barIdMm >= current.barOdMm) {
     warn.hidden = false
@@ -658,7 +612,6 @@ function fillProjectSheet(result: Result): void {
   if (result.densityOutOfSpec) sheet.append(p('banner banner-warn', 'OUT OF SPEC — density is below 15 lb/gal.'))
   sheet.append(p('sheet-kicker', 'INFERRED field consumption'))
   sheet.append(p('big', `${formatNumber(result.perPile.standard, 2)} gal / pile`))
-  sheet.append(p('sheet-meta', result.equation))
   const summary = document.createElement('div')
   summary.className = 'sheet-grid'
   for (const line of [
@@ -679,13 +632,6 @@ function fillProjectSheet(result: Result): void {
     summary.append(lineRow({ label: line[0], value: line[1] }))
   }
   sheet.append(summary)
-  sheet.append(
-    p(
-      'sheet-meta',
-      'Geometry is theoretical and is not included in the gallons above. ' +
-        `Sheet reference ${formatNumber(result.geometry.reference.annular, 2)} / ${formatNumber(result.geometry.reference.inner, 2)} / ${formatNumber(result.geometry.reference.total, 2)}.`,
-    ),
-  )
   sheet.append(p('sheet-foot', FOOTER))
 }
 
@@ -733,9 +679,6 @@ function projectLines(result: OkResult): PdfLine[] {
     { label: 'Low total', value: `${formatNumber(result.project.low, 1)} gal` },
     { label: 'Standard total', value: `${formatNumber(result.project.standard, 1)} gal` },
     { label: 'High total', value: `${formatNumber(result.project.high, 1)} gal` },
-    { label: 'Yield', value: `${formatNumber(result.yieldDisplay, 3)} gal/bag` },
-    { label: 'Bags per pile', value: formatNumber(result.bagsPerPile, 2) },
-    { label: 'Exact bags', value: formatNumber(result.bagsExact, 3) },
     { label: 'Project bags', value: formatNumber(result.bagsCeil, 0) },
     { label: 'Purchase reserve – simple ground', value: `${formatFlex(result.inputs.reservePercent)}%` },
     { label: 'Bags to buy', value: formatNumber(result.bagsToBuy, 0) },
@@ -824,7 +767,7 @@ async function downloadCurrent(): Promise<void> {
       outOfSpec: result.densityOutOfSpec,
       lines: projectLines(result),
       geometry: geometryLines(result),
-      note: 'Field gallons are the mass balance minus the tank residual. Geometry is theoretical and is not included in the purchase. On iPhone, Print / Save as PDF uses the on-screen sheet if the download does not open.',
+      note: '',
     },
     { logoDataUrl: logoUrl },
   )

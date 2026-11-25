@@ -132,13 +132,15 @@ export function buildProjectPdf(
   }
   y = sectionTitle(doc, 'Field consumption (INFERRED)', y)
   y = lines(doc, details.lines, y)
-  y = sectionTitle(doc, 'Theoretical geometry (not included above)', y)
+  y = sectionTitle(doc, 'Geometry', y)
   y = lines(doc, details.geometry, y)
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9)
-  doc.setTextColor(46, 46, 46)
-  const note = doc.splitTextToSize(details.note, PAGE_WIDTH - MARGIN * 2) as string[]
-  doc.text(note, MARGIN, y)
+  if (details.note.trim()) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.setTextColor(46, 46, 46)
+    const note = doc.splitTextToSize(details.note, PAGE_WIDTH - MARGIN * 2) as string[]
+    doc.text(note, MARGIN, y)
+  }
   footer(doc)
   return doc
 }
