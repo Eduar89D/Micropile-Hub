@@ -71,14 +71,33 @@ describe('reference projects', () => {
     expect(result.bagsCeil).toBe(36)
   })
 
-  it('30 piles: 966.3 / 1,073.7 / 1,181.1 gal, 106 bags, 117 with reserve, 819 gal water', () => {
+  it('30 piles at 3% simple-ground reserve: 106 project bags, 109 to buy, 763 gal water', () => {
     const result = at(30)
+    expect(result.inputs.reservePercent).toBe(3)
     expect(formatNumber(result.project.low, 1)).toBe('966.3')
     expect(formatNumber(result.project.standard, 1)).toBe('1,073.7')
     expect(formatNumber(result.project.high, 1)).toBe('1,181.1')
+    expect(roundHalfUp(result.bagsExact, 3)).toBe(105.693)
     expect(result.bagsCeil).toBe(106)
-    expect(result.bagsToBuy).toBe(117)
-    expect(result.waterToBuyGal).toBe(819)
+    expect(result.bagsToBuy).toBe(109)
+    expect(result.waterToBuyGal).toBe(763)
+    expect(result.inputs.bagsPerPallet).toBe(35)
+    expect(roundHalfUp(result.palletsExact, 2)).toBe(3.11)
+    expect(result.palletsToBuy).toBe(4)
+  })
+
+  it('120 piles: exact 422.772 bags, 423 base, 436 with 3%, 466 with 10%', () => {
+    const result = at(120)
+    expect(roundHalfUp(result.bagsExact, 3)).toBe(422.772)
+    expect(result.bagsExact).toBeCloseTo(422.772, 3)
+    expect(result.bagsCeil).toBe(423)
+    expect(result.bagsToBuy).toBe(436)
+    expect(result.waterToBuyGal).toBe(3052)
+    expect(result.palletsToBuy).toBe(13)
+    const ten = at(120, { reservePercent: 10 })
+    expect(ten.bagsCeil).toBe(423)
+    expect(ten.bagsToBuy).toBe(466)
+    expect(ten.project).toEqual(result.project)
   })
 
   it('50 piles: 1,610.6 / 1,789.5 / 1,968.5 gal and 177 bags, not 3.52 x 50', () => {
@@ -103,6 +122,10 @@ describe('reserve and density', () => {
     expect(more.bagsCeil).toBe(base.bagsCeil)
     expect(more.bagsToBuy).toBeGreaterThan(base.bagsToBuy)
     expect(more.waterToBuyGal).toBe(more.bagsToBuy * more.inputs.waterGalPerBag)
+    const ten = at(30, { reservePercent: 10 })
+    expect(ten.bagsToBuy).toBe(117)
+    expect(ten.waterToBuyGal).toBe(819)
+    expect(ten.project).toEqual(base.project)
   })
 
   it('flags density under 15 lb/gal and keeps the 16 / 15 / 14 table', () => {
@@ -147,7 +170,7 @@ describe('geometry', () => {
 
 describe('footer', () => {
   it('uses the required credit line', () => {
-    expect(FOOTER).toBe('v1.0 — developed by ED')
+    expect(FOOTER).toBe('v1.1 — developed by ED')
   })
 })
 

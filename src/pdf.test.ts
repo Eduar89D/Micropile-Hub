@@ -29,7 +29,7 @@ describe('pdf', () => {
     expect(raw).toContain('35.79 gal')
     expect(raw).toContain('BASEco')
     expect(raw).toContain('developed by ED')
-    expect(raw).toContain('v1.0')
+    expect(raw).toContain('v1.1')
   })
 
   it('prints the comparison columns', () => {
@@ -43,6 +43,7 @@ describe('pdf', () => {
         high: '393.7',
         bags: '36',
         bagsReserve: '39',
+        pallets: '2',
         water: '273',
       },
     ]

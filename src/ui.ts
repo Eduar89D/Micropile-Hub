@@ -1,5 +1,6 @@
 import { wordmarkSvg } from './logo'
 import {
+  APP_DOCUMENT_TITLE,
   FOOTER,
   compute,
   defaults,
@@ -43,6 +44,7 @@ const NUMERIC: Array<[keyof Inputs, string]> = [
   ['batchesPerPile', 'batches-per-pile'],
   ['tankResidualGal', 'residual'],
   ['reservePercent', 'reserve'],
+  ['bagsPerPallet', 'bags-per-pallet'],
   ['waterGalPerBag', 'water-per-bag'],
   ['drillBitIn', 'drill-bit'],
   ['barOdMm', 'bar-od'],
@@ -120,13 +122,16 @@ function shell(): string {
         <section class="card" id="purchase">
           <h2>Cement and water to buy</h2>
           <div class="purchase" id="purchase-rows"></div>
-          <label class="field reserve-field" for="reserve">Purchase reserve (%)
-            <input id="reserve" type="number" inputmode="decimal" min="0" step="1" />
+          <label class="field reserve-field" for="reserve">Purchase reserve – simple ground (%)
+            <input id="reserve" type="number" inputmode="decimal" min="0" step="0.1" />
+          </label>
+          <label class="field reserve-field" for="bags-per-pallet">Pallets (bags per pallet)
+            <input id="bags-per-pallet" type="number" inputmode="decimal" min="1" step="1" />
           </label>
           <label class="field reserve-field" for="water-per-bag">Water to buy (gal per bag)
             <input id="water-per-bag" type="number" inputmode="decimal" min="0" step="0.1" />
           </label>
-          <p class="note">Project bags round up the exact bags on the whole job, not 3.52 × piles. Reserve is ceil(exact bags × (1 + reserve)) and the water that goes with those bags.</p>
+          <p class="note">3% is the reserve for simple, standard ground. Medium and hard ground will get their own factors in a future version. The reserve changes bags, pallets, and water to buy only. It does not change the low, standard, or high gallons.</p>
         </section>
 
         <section class="card" id="scenarios">
@@ -170,14 +175,14 @@ function shell(): string {
             <h2>Special conditions</h2>
             <span class="badge badge-warn">Coming soon</span>
           </div>
-          <p>Not in this version. The mass-balance number assumes ordinary ground.</p>
+          <p>Coming soon. Medium and hard ground will get their own purchase factors in a future version. The reserve above stays at 3% for simple, standard ground.</p>
           <ul class="soon-list">
             <li>Fractured rock</li>
             <li>Voids and cavities</li>
             <li>High water table</li>
             <li>Loose fill</li>
           </ul>
-          <button type="button" class="btn" id="special-open" disabled>Not available in 1.0</button>
+          <button type="button" class="btn" id="special-open" disabled>Not available in 1.1</button>
         </section>
 
         <details class="card formulas" id="formulas">
@@ -190,10 +195,10 @@ function shell(): string {
             <li>Low / high = that 2-decimal figure × 0.90 / × 1.10. Per pile is shown to 1 decimal (32.2 / 35.8 / 39.4). Project gallons multiply by the pile count and are shown to 1 decimal.</li>
             <li>Displayed yield = 50.79 ÷ 5 = 10.158 gal/bag. Purchasing uses the unrounded yield (batch volume ÷ bags) so the project total is not shorted by rounding.</li>
             <li>Project bags = ceil(standard gallons ÷ yield) on the project total. 50 piles is 176.155 bags, which rounds up to 177. 3.52 × 50 = 176 would be one bag short.</li>
-            <li>Bags to buy = ceil(exact bags × (1 + reserve)). Default reserve 10%. Water to buy = bags to buy × 7 gal. Reserve never changes low, standard, or high gallons.</li>
+            <li>Bags to buy = ceil(exact bags × (1 + reserve)). The default reserve is 3% for simple, standard ground. Water to buy = bags to buy × 7 gal. Pallets to buy = ceil(bags to buy ÷ 35), and 35 bags per pallet can be edited. Reserve never changes low, standard, or high gallons.</li>
             <li>Density scenarios are 16, 15, and 14 lb/gal. Under 15 lb/gal is OUT OF SPEC.</li>
             <li>Geometry uses a 2.5 in bit, a 40 mm OD / 20 mm ID bar, and 3 bars of 9 ft 10 in (29.5 ft). A US gallon is 231 in³ and 25.4 mm is 1 in. Two couplers are counted as hardware and are not given a volume.</li>
-            <li>Special conditions (fractured rock, voids, high water, loose fill) are not in the 1.0 math.</li>
+            <li>Special conditions (fractured rock, voids, high water, loose fill, medium and hard ground) stay out of the 1.1 math. Their factors are coming later.</li>
           </ul>
           <p id="formula-now"></p>
         </details>
@@ -387,7 +392,9 @@ function fillPurchase(result: OkResult): void {
     ['Bags per pile', formatNumber(result.bagsPerPile, 2)],
     ['Exact bags', formatNumber(result.bagsExact, 3)],
     ['Project bags', formatNumber(result.bagsCeil, 0)],
-    [`Bags to buy (${formatFlex(result.inputs.reservePercent)}% reserve)`, formatNumber(result.bagsToBuy, 0)],
+    ['Purchase reserve – simple ground', `${formatFlex(result.inputs.reservePercent)}%`],
+    ['Bags to buy', formatNumber(result.bagsToBuy, 0)],
+    [`Pallets (${formatFlex(result.inputs.bagsPerPallet)} bags/pallet)`, formatNumber(result.palletsToBuy, 0)],
     ['Water to buy', `${formatFlex(result.waterToBuyGal)} gal`],
   ]
   for (const [label, value] of rows) {
@@ -461,7 +468,7 @@ function paintProjects(): void {
     table.className = 'cmp'
     const thead = document.createElement('thead')
     const head = document.createElement('tr')
-    for (const label of ['Project', 'Piles', 'ft', 'Low gal', 'Std gal', 'High gal', 'Bags', 'Bags w/ reserve', 'Water gal', 'Actions']) {
+    for (const label of ['Project', 'Piles', 'ft', 'Low gal', 'Std gal', 'High gal', 'Bags', 'Bags w/ reserve', 'Pallets', 'Water gal', 'Actions']) {
       const th = document.createElement('th')
       th.textContent = label
       th.scope = 'col'
@@ -501,6 +508,7 @@ function projectRow(project: SavedProject): HTMLTableRowElement {
     addCell(tr, 'High gal', formatNumber(result.project.high, 1))
     addCell(tr, 'Bags', formatNumber(result.bagsCeil, 0))
     addCell(tr, 'Bags w/ reserve', formatNumber(result.bagsToBuy, 0))
+    addCell(tr, 'Pallets', formatNumber(result.palletsToBuy, 0))
     addCell(tr, 'Water gal', formatFlex(result.waterToBuyGal))
   }
   const actions = document.createElement('td')
@@ -638,7 +646,7 @@ function fillProjectSheet(result: Result): void {
   const sheet = byId('sheet')
   sheet.replaceChildren()
   sheet.insertAdjacentHTML('afterbegin', wordmarkSvg('onLight'))
-  sheet.append(p('doc-kicker', 'MicroPile Hub – Grout Consumption Calculator 1.0'))
+  sheet.append(p('doc-kicker', APP_DOCUMENT_TITLE))
   sheet.append(p('sheet-meta', 'BASEco · St. George, Utah'))
   if (!result.ok) {
     sheet.append(p('', result.error))
@@ -660,7 +668,9 @@ function fillProjectSheet(result: Result): void {
     ['Standard', `${formatNumber(result.project.standard, 1)} gal`],
     ['High', `${formatNumber(result.project.high, 1)} gal`],
     ['Project bags', formatNumber(result.bagsCeil, 0)],
+    ['Purchase reserve – simple ground', `${formatFlex(result.inputs.reservePercent)}%`],
     ['Bags to buy', formatNumber(result.bagsToBuy, 0)],
+    [`Pallets (${formatFlex(result.inputs.bagsPerPallet)} bags/pallet)`, formatNumber(result.palletsToBuy, 0)],
     ['Water', `${formatFlex(result.waterToBuyGal)} gal`],
     ['Annular', `${formatNumber(result.geometry.annularGal, 3)} gal`],
     ['Inner', `${formatNumber(result.geometry.innerGal, 3)} gal`],
@@ -683,7 +693,7 @@ function fillComparisonSheet(): void {
   const sheet = byId('sheet')
   sheet.replaceChildren()
   sheet.insertAdjacentHTML('afterbegin', wordmarkSvg('onLight'))
-  sheet.append(p('doc-kicker', 'MicroPile Hub – Grout Consumption Calculator 1.0'))
+  sheet.append(p('doc-kicker', APP_DOCUMENT_TITLE))
   sheet.append(h('h2', 'Saved project comparison'))
   sheet.append(p('', new Date().toLocaleDateString('en-US', { dateStyle: 'long' })))
   const projects = loadProjects()
@@ -704,6 +714,7 @@ function fillComparisonSheet(): void {
       ['High gal', row.high],
       ['Bags', row.bags],
       ['Bags w/ reserve', row.bagsReserve],
+      ['Pallets', row.pallets],
       ['Water gal', row.water],
     ]) {
       sheet.append(lineRow({ label, value }))
@@ -726,7 +737,9 @@ function projectLines(result: OkResult): PdfLine[] {
     { label: 'Bags per pile', value: formatNumber(result.bagsPerPile, 2) },
     { label: 'Exact bags', value: formatNumber(result.bagsExact, 3) },
     { label: 'Project bags', value: formatNumber(result.bagsCeil, 0) },
-    { label: `Bags to buy (${formatFlex(result.inputs.reservePercent)}% reserve)`, value: formatNumber(result.bagsToBuy, 0) },
+    { label: 'Purchase reserve – simple ground', value: `${formatFlex(result.inputs.reservePercent)}%` },
+    { label: 'Bags to buy', value: formatNumber(result.bagsToBuy, 0) },
+    { label: `Pallets (${formatFlex(result.inputs.bagsPerPallet)} bags/pallet)`, value: formatNumber(result.palletsToBuy, 0) },
     { label: 'Water to buy', value: `${formatFlex(result.waterToBuyGal)} gal` },
   ]
 }
@@ -750,6 +763,7 @@ function comparisonRow(result: OkResult): ComparisonRow {
     high: formatNumber(result.project.high, 1),
     bags: formatNumber(result.bagsCeil, 0),
     bagsReserve: formatNumber(result.bagsToBuy, 0),
+    pallets: formatNumber(result.palletsToBuy, 0),
     water: formatFlex(result.waterToBuyGal),
   }
 }

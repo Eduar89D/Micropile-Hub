@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf'
-import { FOOTER } from './model'
+import { APP_DOCUMENT_TITLE, FOOTER } from './model'
 
 export interface PdfLine {
   label: string
@@ -15,6 +15,7 @@ export interface ComparisonRow {
   high: string
   bags: string
   bagsReserve: string
+  pallets: string
   water: string
 }
 
@@ -55,7 +56,7 @@ function header(doc: jsPDF, logoDataUrl: string | undefined, subtitle: string): 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(11)
   doc.setTextColor(26, 23, 20)
-  doc.text('MicroPile Hub – Grout Consumption Calculator 1.0', textX, y + 34)
+  doc.text(APP_DOCUMENT_TITLE, textX, y + 34)
   y += 56
   doc.setFontSize(10)
   doc.setTextColor(58, 52, 44)
@@ -148,15 +149,16 @@ export function buildComparisonPdf(
   y += 20
 
   const columns: Array<{ key: keyof ComparisonRow; label: string; width: number }> = [
-    { key: 'name', label: 'Project', width: 108 },
-    { key: 'piles', label: 'Piles', width: 40 },
+    { key: 'name', label: 'Project', width: 100 },
+    { key: 'piles', label: 'Piles', width: 36 },
     { key: 'feet', label: 'ft', width: 42 },
     { key: 'low', label: 'Low', width: 58 },
     { key: 'standard', label: 'Std', width: 62 },
     { key: 'high', label: 'High', width: 58 },
-    { key: 'bags', label: 'Bags', width: 40 },
-    { key: 'bagsReserve', label: 'Reserve', width: 52 },
-    { key: 'water', label: 'Water', width: 48 },
+    { key: 'bags', label: 'Bags', width: 36 },
+    { key: 'bagsReserve', label: 'Reserve', width: 46 },
+    { key: 'pallets', label: 'Pallets', width: 44 },
+    { key: 'water', label: 'Water', width: 42 },
   ]
 
   const drawHead = (top: number): number => {

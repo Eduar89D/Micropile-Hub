@@ -1,6 +1,8 @@
 /** BASEco grout model. Field gallons use the mass balance rounded to 2 decimals (35.79), then the ±10% range. Bag purchasing divides that project total by the unrounded yield so 50 piles is 176.155 bags, not 3.52 × 50. */
 
-export const FOOTER = 'v1.0 — developed by ED'
+export const APP_VERSION = '1.1'
+export const FOOTER = `v${APP_VERSION} — developed by ED`
+export const APP_DOCUMENT_TITLE = `MicroPile Hub – Grout Consumption Calculator ${APP_VERSION}`
 export const SPEC_DENSITY_LB_PER_GAL = 15
 export const SCENARIO_DENSITIES = [16, 15, 14] as const
 export const GEOMETRY_REFERENCE = { annular: 4.53, inner: 0.77, total: 5.3 } as const
@@ -20,6 +22,7 @@ export interface Inputs {
   batchesPerPile: number
   tankResidualGal: number
   reservePercent: number
+  bagsPerPallet: number
   waterGalPerBag: number
   drillBitIn: number
   barOdMm: number
@@ -42,7 +45,8 @@ export function defaults(): Inputs {
     densityLbPerGal: 15,
     batchesPerPile: 1,
     tankResidualGal: 15,
-    reservePercent: 10,
+    reservePercent: 3,
+    bagsPerPallet: 35,
     waterGalPerBag: 7,
     drillBitIn: 2.5,
     barOdMm: 40,
@@ -93,6 +97,8 @@ export interface OkResult {
   bagsExact: number
   bagsCeil: number
   bagsToBuy: number
+  palletsExact: number
+  palletsToBuy: number
   waterToBuyGal: number
   densityOutOfSpec: boolean
   scenarios: DensityScenario[]
@@ -165,6 +171,7 @@ function validate(input: Inputs): string | null {
     [input.batchesPerPile, 'Batches per pile'],
     [input.tankResidualGal, 'Tank residual'],
     [input.reservePercent, 'Purchase reserve'],
+    [input.bagsPerPallet, 'Bags per pallet'],
     [input.waterGalPerBag, 'Water per bag'],
     [input.drillBitIn, 'Drill bit'],
     [input.barOdMm, 'Bar outside diameter'],
@@ -180,6 +187,7 @@ function validate(input: Inputs): string | null {
   if (input.pileCount < 0) return 'Number of piles cannot be negative.'
   if (input.lengthPerPileFt < 0) return 'Length per pile cannot be negative.'
   if (!(input.bagsPerBatch > 0)) return 'Bags per batch must be greater than 0.'
+  if (!(input.bagsPerPallet > 0)) return 'Bags per pallet must be greater than 0.'
   if (!(input.densityLbPerGal > 0)) return 'Grout density must be greater than 0 lb/gal.'
   if (input.lbPerBag < 0 || input.waterGalPerBatch < 0 || input.waterLbPerGal < 0) {
     return 'Batch weights and water cannot be negative.'
@@ -249,6 +257,8 @@ export function compute(input: Inputs): Result {
   const bagsPerPile = standard / yieldPrecise
   const bagsCeil = ceilStable(bagsExact)
   const bagsToBuy = ceilStable(bagsExact * (1 + input.reservePercent / 100))
+  const palletsExact = bagsToBuy / input.bagsPerPallet
+  const palletsToBuy = ceilStable(palletsExact)
   const waterToBuyGal = bagsToBuy * input.waterGalPerBag
   const scenarios: DensityScenario[] = SCENARIO_DENSITIES.map((density) => ({
     density,
@@ -279,6 +289,8 @@ export function compute(input: Inputs): Result {
     bagsExact,
     bagsCeil,
     bagsToBuy,
+    palletsExact,
+    palletsToBuy,
     waterToBuyGal,
     densityOutOfSpec: input.densityLbPerGal < SPEC_DENSITY_LB_PER_GAL,
     scenarios,
