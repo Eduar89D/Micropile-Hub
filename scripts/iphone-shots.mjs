@@ -44,7 +44,7 @@ const must = [
   '3.52',
   'OUT OF SPEC',
   'Coming soon',
-  'v1.1 — developed by ED',
+  'v1.2 — developed by ED',
   '4.538',
   '0.746',
   '5.284',

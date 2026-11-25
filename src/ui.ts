@@ -66,7 +66,7 @@ function shell(): string {
   return `
     <div id="app-main">
       <header class="top">
-        ${wordmarkSvg('onDark')}
+        ${wordmarkSvg()}
         <p class="product">MicroPile Hub</p>
         <h1>Grout Consumption Calculator</h1>
         <p class="where">St. George, Utah</p>
@@ -182,7 +182,7 @@ function shell(): string {
             <li>High water table</li>
             <li>Loose fill</li>
           </ul>
-          <button type="button" class="btn" id="special-open" disabled>Not available in 1.1</button>
+          <button type="button" class="btn" id="special-open" disabled>Not available in 1.2</button>
         </section>
 
         <details class="card formulas" id="formulas">
@@ -198,7 +198,7 @@ function shell(): string {
             <li>Bags to buy = ceil(exact bags × (1 + reserve)). The default reserve is 3% for simple, standard ground. Water to buy = bags to buy × 7 gal. Pallets to buy = ceil(bags to buy ÷ 35), and 35 bags per pallet can be edited. Reserve never changes low, standard, or high gallons.</li>
             <li>Density scenarios are 16, 15, and 14 lb/gal. Under 15 lb/gal is OUT OF SPEC.</li>
             <li>Geometry uses a 2.5 in bit, a 40 mm OD / 20 mm ID bar, and 3 bars of 9 ft 10 in (29.5 ft). A US gallon is 231 in³ and 25.4 mm is 1 in. Two couplers are counted as hardware and are not given a volume.</li>
-            <li>Special conditions (fractured rock, voids, high water, loose fill, medium and hard ground) stay out of the 1.1 math. Their factors are coming later.</li>
+            <li>Special conditions (fractured rock, voids, high water, loose fill, medium and hard ground) stay out of the 1.2 math. Their factors are coming later.</li>
           </ul>
           <p id="formula-now"></p>
         </details>
@@ -645,7 +645,7 @@ function fillSheet(result: Result): void {
 function fillProjectSheet(result: Result): void {
   const sheet = byId('sheet')
   sheet.replaceChildren()
-  sheet.insertAdjacentHTML('afterbegin', wordmarkSvg('onLight'))
+  sheet.insertAdjacentHTML('afterbegin', wordmarkSvg())
   sheet.append(p('doc-kicker', APP_DOCUMENT_TITLE))
   sheet.append(p('sheet-meta', 'BASEco · St. George, Utah'))
   if (!result.ok) {
@@ -692,7 +692,7 @@ function fillProjectSheet(result: Result): void {
 function fillComparisonSheet(): void {
   const sheet = byId('sheet')
   sheet.replaceChildren()
-  sheet.insertAdjacentHTML('afterbegin', wordmarkSvg('onLight'))
+  sheet.insertAdjacentHTML('afterbegin', wordmarkSvg())
   sheet.append(p('doc-kicker', APP_DOCUMENT_TITLE))
   sheet.append(h('h2', 'Saved project comparison'))
   sheet.append(p('', new Date().toLocaleDateString('en-US', { dateStyle: 'long' })))
@@ -794,7 +794,7 @@ function h(tag: 'h2' | 'h3', value: string): HTMLElement {
 
 async function logo(): Promise<string | undefined> {
   if (!logoDataUrl) {
-    logoDataUrl = fetch(`${import.meta.env.BASE_URL}icons/icon-192.png`, { signal: AbortSignal.timeout(4000) })
+    logoDataUrl = fetch(`${import.meta.env.BASE_URL}logo.png`, { signal: AbortSignal.timeout(4000) })
       .then((response) => response.blob())
       .then(
         (blob) =>

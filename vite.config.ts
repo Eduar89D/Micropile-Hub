@@ -7,7 +7,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['favicon.svg', 'icons/*.png', 'logo.svg'],
+      includeAssets: ['favicon.svg', 'icons/*.png', 'logo.svg', 'logo.png', 'splash.png'],
       manifest: {
         name: 'MicroPile Hub – Grout Consumption Calculator',
         short_name: 'MicroPile Hub',
@@ -15,8 +15,8 @@ export default defineConfig({
           'BASEco grout consumption calculator for micropiles. Field crew, office, and engineer. St. George, Utah.',
         lang: 'en',
         dir: 'ltr',
-        theme_color: '#143F32',
-        background_color: '#F3EEE4',
+        theme_color: '#F77F4B',
+        background_color: '#FFFFFF',
         display: 'standalone',
         orientation: 'portrait',
         start_url: './',
@@ -51,6 +51,10 @@ export default defineConfig({
       workbox: {
         navigateFallback: 'index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        cacheId: 'micropile-hub-v12',
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],

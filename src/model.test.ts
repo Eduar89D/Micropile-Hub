@@ -170,7 +170,7 @@ describe('geometry', () => {
 
 describe('footer', () => {
   it('uses the required credit line', () => {
-    expect(FOOTER).toBe('v1.1 — developed by ED')
+    expect(FOOTER).toBe('v1.2 — developed by ED')
   })
 })
 

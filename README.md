@@ -1,4 +1,4 @@
-# MicroPile Hub – Grout Consumption Calculator 1.1
+# MicroPile Hub – Grout Consumption Calculator 1.2
 
 Field calculator for [BASEco](https://github.com/Eduar89D/Micropile-Hub) (St. George, Utah). It runs in the browser, including iPhone Safari, with no server. Projects stay on the phone.
 
@@ -35,4 +35,4 @@ Pushes to `main` run `.github/workflows/pages.yml` (test, build, GitHub Pages). 
 5. Skip the suggested workflow templates. `pages.yml` is already the publisher.
 6. Open the **Actions** tab, select **Deploy GitHub Pages**, and **Re-run all jobs**.
 
-Footer: v1.1 — developed by ED
+Footer: v1.2 — developed by ED

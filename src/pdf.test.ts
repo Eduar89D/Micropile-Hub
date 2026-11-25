@@ -29,7 +29,7 @@ describe('pdf', () => {
     expect(raw).toContain('35.79 gal')
     expect(raw).toContain('BASEco')
     expect(raw).toContain('developed by ED')
-    expect(raw).toContain('v1.1')
+    expect(raw).toContain('v1.2')
   })
 
   it('prints the comparison columns', () => {

@@ -1,6 +1,6 @@
 /** BASEco grout model. Field gallons use the mass balance rounded to 2 decimals (35.79), then the ±10% range. Bag purchasing divides that project total by the unrounded yield so 50 piles is 176.155 bags, not 3.52 × 50. */
 
-export const APP_VERSION = '1.1'
+export const APP_VERSION = '1.2'
 export const FOOTER = `v${APP_VERSION} — developed by ED`
 export const APP_DOCUMENT_TITLE = `MicroPile Hub – Grout Consumption Calculator ${APP_VERSION}`
 export const SPEC_DENSITY_LB_PER_GAL = 15

@@ -32,12 +32,12 @@ function footer(doc: jsPDF): void {
   const pages = doc.getNumberOfPages()
   for (let page = 1; page <= pages; page += 1) {
     doc.setPage(page)
-    doc.setDrawColor(20, 63, 50)
+    doc.setDrawColor(247, 127, 75)
     doc.setLineWidth(1)
     doc.line(MARGIN, PAGE_HEIGHT - 48, PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 48)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
-    doc.setTextColor(20, 63, 50)
+    doc.setTextColor(22, 22, 22)
     doc.text(FOOTER, MARGIN, PAGE_HEIGHT - 32)
     doc.text(`${page} / ${pages}`, PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 32, { align: 'right' })
   }
@@ -46,28 +46,36 @@ function footer(doc: jsPDF): void {
 function header(doc: jsPDF, logoDataUrl: string | undefined, subtitle: string): number {
   let y = MARGIN
   if (logoDataUrl) {
-    doc.addImage(logoDataUrl, 'PNG', MARGIN, y, 42, 42)
+    const logoWidth = 240
+    const logoHeight = logoWidth * (142 / 427)
+    doc.addImage(logoDataUrl, 'PNG', MARGIN, y, logoWidth, logoHeight)
+    y += logoHeight + 10
+  } else {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(18)
+    doc.setTextColor(247, 127, 75)
+    doc.text('BASEco', MARGIN, y + 16)
+    doc.setTextColor(22, 22, 22)
+    doc.setFontSize(9)
+    doc.text('FOUNDATION SYSTEMS', MARGIN, y + 30)
+    y += 40
   }
-  const textX = logoDataUrl ? MARGIN + 52 : MARGIN
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(18)
-  doc.setTextColor(20, 63, 50)
-  doc.text('BASEco', textX, y + 18)
+  doc.setFontSize(12)
+  doc.setTextColor(22, 22, 22)
+  doc.text(APP_DOCUMENT_TITLE, MARGIN, y)
+  y += 16
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(11)
-  doc.setTextColor(26, 23, 20)
-  doc.text(APP_DOCUMENT_TITLE, textX, y + 34)
-  y += 56
   doc.setFontSize(10)
-  doc.setTextColor(58, 52, 44)
+  doc.setTextColor(46, 46, 46)
   doc.text('St. George, Utah', MARGIN, y)
   y += 16
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(26, 23, 20)
+  doc.setTextColor(22, 22, 22)
   doc.text(subtitle, MARGIN, y)
   y += 8
-  doc.setDrawColor(20, 63, 50)
-  doc.setLineWidth(1.5)
+  doc.setDrawColor(247, 127, 75)
+  doc.setLineWidth(2)
   doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y)
   return y + 18
 }
@@ -75,7 +83,7 @@ function header(doc: jsPDF, logoDataUrl: string | undefined, subtitle: string): 
 function sectionTitle(doc: jsPDF, title: string, y: number): number {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
-  doc.setTextColor(20, 63, 50)
+  doc.setTextColor(22, 22, 22)
   doc.text(title, MARGIN, y)
   return y + 16
 }
@@ -88,10 +96,10 @@ function lines(doc: jsPDF, rows: PdfLine[], y: number): number {
       y = MARGIN
     }
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(58, 52, 44)
+    doc.setTextColor(46, 46, 46)
     doc.text(row.label, MARGIN, y)
     doc.setFont('helvetica', 'normal')
-    doc.setTextColor(26, 23, 20)
+    doc.setTextColor(22, 22, 22)
     doc.text(row.value, PAGE_WIDTH - MARGIN, y, { align: 'right' })
     y += 16
   }
@@ -113,12 +121,12 @@ export function buildProjectPdf(
   let y = header(doc, options?.logoDataUrl, details.projectName || 'Untitled project')
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
-  doc.setTextColor(58, 52, 44)
+  doc.setTextColor(46, 46, 46)
   doc.text(details.date, MARGIN, y)
   y += 18
   if (details.outOfSpec) {
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(138, 62, 0)
+    doc.setTextColor(142, 27, 18)
     doc.text('OUT OF SPEC — density is below 15 lb/gal.', MARGIN, y)
     y += 18
   }
@@ -128,7 +136,7 @@ export function buildProjectPdf(
   y = lines(doc, details.geometry, y)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
-  doc.setTextColor(58, 52, 44)
+  doc.setTextColor(46, 46, 46)
   const note = doc.splitTextToSize(details.note, PAGE_WIDTH - MARGIN * 2) as string[]
   doc.text(note, MARGIN, y)
   footer(doc)
@@ -144,7 +152,7 @@ export function buildComparisonPdf(
   let y = header(doc, options?.logoDataUrl, 'Saved project comparison')
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
-  doc.setTextColor(58, 52, 44)
+  doc.setTextColor(46, 46, 46)
   doc.text(date, MARGIN, y)
   y += 20
 
@@ -162,11 +170,11 @@ export function buildComparisonPdf(
   ]
 
   const drawHead = (top: number): number => {
-    doc.setFillColor(20, 63, 50)
+    doc.setFillColor(247, 127, 75)
     doc.rect(MARGIN, top, PAGE_WIDTH - MARGIN * 2, 18, 'F')
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(8)
-    doc.setTextColor(244, 240, 228)
+    doc.setTextColor(20, 20, 20)
     let x = MARGIN + 4
     for (const column of columns) {
       doc.text(column.label, x, top + 12)
@@ -187,7 +195,7 @@ export function buildComparisonPdf(
       doc.setFillColor(243, 238, 228)
       doc.rect(MARGIN, y - 10, PAGE_WIDTH - MARGIN * 2, 16, 'F')
     }
-    doc.setTextColor(26, 23, 20)
+    doc.setTextColor(22, 22, 22)
     let x = MARGIN + 4
     for (const column of columns) {
       const raw = row[column.key]
